@@ -1,0 +1,10 @@
+name: Pytest
+
+on: [push]
+jobs:
+  Pytest:
+    runs-on: ubuntu-latest
+    name: Pytest
+    steps:
+      - name: Python Pytest Github Action
+        uses: fylein/python-pytest-github-action@v2
