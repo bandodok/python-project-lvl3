@@ -8,8 +8,8 @@ def download(download_path, output_path=os.getcwd()):
     r = requests.get(download_path)
     file_name = url_str_replace(download_path)
     path = f'{output_path}/{file_name}.html'
-    with open(path, 'w') as f:
-        f.write(r.text)
+    with open(path, 'wb') as f:
+        f.write(r.content)
     return path
 
 
