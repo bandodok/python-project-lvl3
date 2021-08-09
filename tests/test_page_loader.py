@@ -28,6 +28,21 @@ def test_download(get_response, get_html):
             reply=200,
             response_body='ok'
         )
+        pook.get(
+            'https://ru.hexlet.io/courses/assets/application.css',
+            reply=200,
+            response_body='ok'
+        )
+        pook.get(
+            'https://ru.hexlet.io/courses/courses',
+            reply=200,
+            response_body='ok'
+        )
+        pook.get(
+            'https://ru.hexlet.io/packs/js/runtime.js',
+            reply=200,
+            response_body='ok'
+        )
         file_path = download('https://ru.hexlet.io/courses', tmpdir)
         page_path = f'{tmpdir}/ru-hexlet-io-courses.html'
         files_dir = f'{tmpdir}/ru-hexlet-io-courses_files'
