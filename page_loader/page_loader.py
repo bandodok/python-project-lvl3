@@ -4,6 +4,16 @@ import requests
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import shutil
+import logging
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename='app.log',
+    filemode='w',
+    format="%(asctime)s - %(levelname)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 def download(web_path, output_path=os.getcwd()):
@@ -51,7 +61,14 @@ class PageLoader:
         return full_url
 
     def _write_file(self, file, url, name):
-        r = requests.get(url)
+        try:
+            r = requests.get(url)
+        except requests.exceptions.InvalidURL:
+            logging.error(f'Invalid url: {url}')
+            return
+        except requests.exceptions.MissingSchema:
+            logging.error(f'Missing schema: {url}')
+            return
         if r.status_code == 200:
             with open(name, 'wb') as f:
                 f.write(r.content)
