@@ -25,73 +25,62 @@ def download(web_path, output_path=os.getcwd()):
     file_name = url_str_replace(web_path)
     path = f'{output_path}/{file_name}'
     dir_path = f'{path[:-5]}_files'
-    file_path = f'{path}'
     mkdir(dir_path)
-    new_page = PageLoader(soup, web_path, dir_path)
-    new_soup = new_page.download()
-    with open(file_path, 'wb') as f:
-        f.write(new_soup)
-    return file_path
+    tags = soup.find_all(['img', 'link', 'script'])
+    netloc = urlparse(web_path).netloc
+    for tag in tags:
+        atr = choose_atr(tag)
+        if not tag.get(atr, None):
+            continue
+        source = tag[atr]
+        file_netloc = urlparse(source).netloc
+        if file_netloc in (netloc, ''):
+            full_url = get_full_url(web_path, file_netloc, source)
+            file_name = url_str_replace(netloc + tag[atr])
+            file_name = f'{dir_path}/{file_name}'
+            write_file(tag, atr, full_url, file_name)
+    new_soup = soup
+    with open(path, 'wb') as f:
+        f.write(new_soup.encode(formatter="html5"))
+    return path
+
+
+def write_file(tag, atr, url, name):
+    try:
+        r = requests.get(url)
+    except requests.exceptions.InvalidURL:
+        logging.error(f'Invalid url: {url}')
+        return
+    except requests.exceptions.MissingSchema:
+        logging.error(f'Missing schema: {url}')
+        return
+    if r.status_code == 200:
+        with open(name, 'wb') as f:
+            f.write(r.content)
+        file_path = '/'.join(name.split('/')[-2:])
+        tag[atr] = file_path
+
+
+def get_full_url(web_path, file_netloc, source):
+    if file_netloc == '':
+        full_url = f'{web_path}{source}'
+    else:
+        full_url = source
+    return full_url
+
+
+def choose_atr(tag):
+    tags = {
+        'img': 'src',
+        'link': 'href',
+        'script': 'src'
+    }
+    return tags.get(tag.name)
 
 
 def web_request(path):
     r = requests.get(path)
     return r.content
-
-
-class PageLoader:
-    def __init__(self, soup, url, dir):
-        self.soup = soup
-        self.url = url
-        self.dir = dir
-        self.netloc = urlparse(self.url).netloc
-        self.tags = {
-            'images': {'tag': 'img', 'atr': 'src'},
-            'links': {'tag': 'link', 'atr': 'href'},
-            'scripts': {'tag': 'script', 'atr': 'src'}
-        }
-
-    def download(self):
-        for v in self.tags.values():
-            self.soup = self._download_files(v)
-        return self.soup.encode(formatter="html5")
-
-    def _get_full_url(self, file, file_netloc):
-        if file_netloc == self.netloc:
-            full_url = file[self._atr]
-        else:
-            full_url = self.url + file[self._atr]
-        return full_url
-
-    def _write_file(self, file, url, name):
-        try:
-            r = requests.get(url)
-        except requests.exceptions.InvalidURL:
-            logging.error(f'Invalid url: {url}')
-            return
-        except requests.exceptions.MissingSchema:
-            logging.error(f'Missing schema: {url}')
-            return
-        if r.status_code == 200:
-            with open(name, 'wb') as f:
-                f.write(r.content)
-            file_path = '/'.join(name.split('/')[-2:])
-            file[self._atr] = file_path
-
-    def _download_files(self, tags):
-        self._tag = tags['tag']
-        self._atr = tags['atr']
-        files = self.soup.find_all(self._tag)
-        for file in files:
-            if not file.get(self._atr, None):
-                continue
-            file_netloc = urlparse(file[self._atr]).netloc
-            if file_netloc in (self.netloc, ''):
-                full_url = self._get_full_url(file, file_netloc)
-                file_name = url_str_replace(self.netloc + file[self._atr])
-                file_name = f'{self.dir}/{file_name}'
-                self._write_file(file, full_url, file_name)
-        return self.soup
 
 
 def mkdir(path):
