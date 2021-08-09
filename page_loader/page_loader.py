@@ -11,7 +11,10 @@ logging.basicConfig(
     level=logging.DEBUG,
     filename='app.log',
     filemode='w',
-    format="%(asctime)s - %(levelname)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s",
+    format="%(asctime)s - "
+           "%(levelname)s - "
+           "(%(filename)s).%(funcName)s(%(lineno)d) - "
+           "%(message)s",
 )
 logger = logging.getLogger(__name__)
 
