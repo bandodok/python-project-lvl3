@@ -24,17 +24,17 @@ def test_download(get_response, get_html):
             response_body=get_response
         )
         pook.get(
-            'https://ru.hexlet.io/courses/assets/professions/nodejs.png',
+            'https://ru.hexlet.io/assets/professions/nodejs.png',
             reply=200,
             response_body='ok'
         )
         pook.get(
-            'https://ru.hexlet.io/courses/assets/application.css',
+            'https://ru.hexlet.io/assets/application.css',
             reply=200,
             response_body='ok'
         )
         pook.get(
-            'https://ru.hexlet.io/courses/courses',
+            'https://ru.hexlet.io/courses',
             reply=200,
             response_body='ok'
         )

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 def download(web_path, output_path=os.getcwd()):
     response = web_request(web_path)
     soup = BeautifulSoup(response, 'html.parser')
-    file_name = url_str_replace(web_path)
+    file_name = make_file_name(web_path)
     path = f'{output_path}/{file_name}'
     dir_path = f'{path[:-5]}_files'
     mkdir(dir_path)
@@ -34,9 +34,10 @@ def download(web_path, output_path=os.getcwd()):
             continue
         source = tag[atr]
         file_netloc = urlparse(source).netloc
-        if file_netloc in (netloc, ''):
+        file_scheme = urlparse(source).scheme
+        if file_netloc in (netloc, '') and file_scheme != 'data':
             full_url = get_full_url(web_path, file_netloc, source)
-            file_name = url_str_replace(netloc + tag[atr])
+            file_name = make_file_name(full_url)
             file_name = f'{dir_path}/{file_name}'
             write_file(tag, atr, full_url, file_name)
     new_soup = soup
@@ -63,7 +64,10 @@ def write_file(tag, atr, url, name):
 
 def get_full_url(web_path, file_netloc, source):
     if file_netloc == '':
-        full_url = f'{web_path}{source}'
+        scheme = urlparse(web_path).scheme
+        netloc = urlparse(web_path).netloc
+        path = f'{scheme}://{netloc}'
+        full_url = f'{path}{source}'
     else:
         full_url = source
     return full_url
@@ -92,15 +96,24 @@ def mkdir(path):
 def url_str_replace(url):
     parse = ''.join(urlparse(url)[1:]).strip()
     parse_after = re.sub(r'\W', '-', parse)
-    formats = {
-        '-png': '.png',
-        '-css': '.css',
-        '-js': '.js'
-    }
-    file_format = [x for x in formats if parse_after.endswith(x)]
-    if file_format:
-        file_format = file_format[0]
-        parse_after = parse_after[:-len(file_format)] + formats[file_format]
-    else:
-        parse_after = parse_after + '.html'
     return parse_after
+
+
+def get_format(url):
+    path = urlparse(url).path
+    format = path.split('.').pop()
+    format_list = ['js', 'css', 'png', 'jpg', 'ico', 'xml', 'html', 'rss', 'gif']
+    if format not in format_list:
+        format = 'html'
+    return format
+
+
+def make_file_name(url):
+    format = get_format(url)
+    parsed = url_str_replace(url)
+    if parsed.endswith(f'-{format}'):
+        format_len = (len(format) + 1)
+        file_name = parsed[:-format_len] + f'.{format}'
+    else:
+        file_name = parsed.replace(f'-{format}', '') + f'.{format}'
+    return file_name
