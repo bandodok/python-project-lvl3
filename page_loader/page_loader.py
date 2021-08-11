@@ -1,22 +1,14 @@
+import sys
 import re
 import os
 import requests
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import shutil
-import logging
+from page_loader.logger import get_logger
 
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    filename='app.log',
-    filemode='w',
-    format="%(asctime)s - "
-           "%(levelname)s - "
-           "(%(filename)s).%(funcName)s(%(lineno)d) - "
-           "%(message)s",
-)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def download(web_path, output_path=os.getcwd()):
@@ -48,16 +40,16 @@ def download(web_path, output_path=os.getcwd()):
 
 def write_file(tag, atr, url, name):
     try:
+        logger.debug(f'get url {url}')
         r = requests.get(url)
-    except requests.exceptions.InvalidURL:
-        logging.error(f'Invalid url: {url}')
-        return
-    except requests.exceptions.MissingSchema:
-        logging.error(f'Missing schema: {url}')
-        return
+        r.raise_for_status()
+    except Exception as e:
+        logger.error(e)
+        sys.exit(1)
     if r.status_code == 200:
         with open(name, 'wb') as f:
             f.write(r.content)
+        logger.debug(f'saved file {name}')
         file_path = '/'.join(name.split('/')[-2:])
         tag[atr] = file_path
 
@@ -83,7 +75,12 @@ def choose_atr(tag):
 
 
 def web_request(path):
-    r = requests.get(path)
+    try:
+        r = requests.get(path)
+        r.raise_for_status()
+    except Exception as e:
+        logger.error(e)
+        sys.exit(1)
     return r.content
 
 
