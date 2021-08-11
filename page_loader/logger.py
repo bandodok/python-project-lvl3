@@ -1,8 +1,13 @@
 import logging
 
 
-log_format = f'%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s).%(funcName)s(%(lineno)d) - %(message)s'
-error_format = f'%(message)s'
+log_format = '%(asctime)s - ' \
+             '[%(levelname)s] - ' \
+             '%(name)s - ' \
+             '(%(filename)s).%(funcName)s(%(lineno)d) - ' \
+             '%(message)s'
+
+error_format = '%(message)s'
 
 
 def get_file_handler():
@@ -25,4 +30,3 @@ def get_logger(name):
     logger.addHandler(get_file_handler())
     logger.addHandler(get_error_handler())
     return logger
-

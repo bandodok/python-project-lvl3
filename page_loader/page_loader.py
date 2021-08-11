@@ -102,7 +102,11 @@ def url_str_replace(url):
 def get_format(url):
     path = urlparse(url).path
     format = path.split('.').pop()
-    format_list = ['js', 'css', 'png', 'jpg', 'ico', 'xml', 'html', 'rss', 'gif']
+    format_list = [
+        'js', 'css', 'png',
+        'jpg', 'ico', 'xml',
+        'html', 'rss', 'gif'
+    ]
     if format not in format_list:
         format = 'html'
     return format
