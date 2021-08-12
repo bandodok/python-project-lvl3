@@ -85,8 +85,8 @@ def test_download_invalid_path(caplog):
         reply=200,
     )
     with pytest.raises(SystemExit):
-        download('https://yandex.ru', 'D:\\qwe')
-    assert 'Invalid path: D:\\qwe' in caplog.text
+        download('https://yandex.ru', '/qwe')
+    assert 'Invalid path:' in caplog.text
     caplog.clear()
 
 
@@ -108,5 +108,5 @@ def test_download_permissions_denied(caplog):
         os.mkdir(path, mode=0o111)
         with pytest.raises(SystemExit):
             download('https://ya.ru', path)
-        assert 'PermissionError: Access denied: D:\\project\\qwerty/ya-ru_files\n' in caplog.text
+        assert 'PermissionError: Access denied:' in caplog.text
         caplog.clear()
