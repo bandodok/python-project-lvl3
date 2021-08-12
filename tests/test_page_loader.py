@@ -62,7 +62,8 @@ def test_download_404(caplog):
     )
     with pytest.raises(SystemExit):
         download('https://ru.hexlet.io/courses')
-    assert '404 Client Error: Not Found for url: https://ru.hexlet.io/courses' in caplog.text
+    assert '404 Client Error: Not Found for url:' in caplog.text
+    assert 'https://ru.hexlet.io/courses' in caplog.text
     caplog.clear()
 
 
@@ -74,7 +75,8 @@ def test_download_500(caplog):
     )
     with pytest.raises(SystemExit):
         download('https://google.com')
-    assert '500 Server Error: Internal Server Error for url: https://google.com' in caplog.text
+    assert '500 Server Error: Internal Server Error for url:' in caplog.text
+    assert 'https://google.com' in caplog.text
     caplog.clear()
 
 
@@ -93,7 +95,9 @@ def test_download_invalid_path(caplog):
 def test_download_invalid_url(caplog):
     with pytest.raises(SystemExit):
         download('qwe')
-    assert "Invalid URL 'qwe': No schema supplied. Perhaps you meant http://qwe?" in caplog.text
+    assert "Invalid URL 'qwe':" in caplog.text
+    assert 'No schema supplied. Perhaps you meant' in caplog.text
+    assert 'http://qwe?' in caplog.text
     caplog.clear()
 
 
