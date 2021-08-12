@@ -12,6 +12,8 @@ logger = get_logger(__name__)
 
 
 def download(web_path, output_path=os.getcwd()):
+    output_path = os.path.abspath(output_path)
+    check_output_path(output_path)
     response = web_request(web_path)
     soup = BeautifulSoup(response, 'html.parser')
     file_name = make_file_name(web_path)
@@ -36,6 +38,12 @@ def download(web_path, output_path=os.getcwd()):
     with open(path, 'wb') as f:
         f.write(new_soup.encode(formatter="html5"))
     return path
+
+
+def check_output_path(path):
+    if not os.path.exists(path):
+        logger.error('Invalid path: ' + path)
+        sys.exit(1)
 
 
 def write_file(tag, atr, url, name):
@@ -87,7 +95,11 @@ def web_request(path):
 def mkdir(path):
     if os.path.exists(path):
         shutil.rmtree(path)
-    os.mkdir(path)
+    try:
+        os.mkdir(path)
+    except OSError:
+        logger.error("PermissionError: Access denied: " + path)
+        sys.exit(1)
 
 
 def url_str_replace(url):
