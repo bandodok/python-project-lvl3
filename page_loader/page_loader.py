@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import shutil
 from page_loader.logger import get_logger
+from progress.bar import Bar
 
 
 logger = get_logger(__name__)
@@ -49,14 +50,22 @@ def check_output_path(path):
 def write_file(tag, atr, url, name):
     try:
         logger.debug(f'get url {url}')
-        r = requests.get(url)
+        r = requests.get(url, stream=True)
+        total = r.headers.get('content-length')
         r.raise_for_status()
     except Exception as e:
         logger.error(e)
         sys.exit(1)
     if r.status_code == 200:
         with open(name, 'wb') as f:
-            f.write(r.content)
+            if not total:
+                f.write(r.content)
+            else:
+                total = int(total)
+                b = Bar('downloading ', max=100, suffix='%(percent)d%%')
+                print(url)
+                for data in b.iter(r.iter_content(chunk_size=total // 100)):
+                    f.write(data)
         logger.debug(f'saved file {name}')
         file_path = '/'.join(name.split('/')[-2:])
         tag[atr] = file_path
