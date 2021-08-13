@@ -1,4 +1,3 @@
-import errno
 import sys
 import re
 import os
@@ -37,8 +36,8 @@ def download(web_path, output_path=os.getcwd()):
             file_name = f'{dir_path}/{file_name}'
             write_file(tag, atr, full_url, file_name)
     new_soup = soup
-    with open(path, 'wb') as f:
-        f.write(new_soup.encode(formatter="html5"))
+    with open(path, 'w') as f:
+        f.write(new_soup.prettify(formatter='html5'))
     return path
 
 
