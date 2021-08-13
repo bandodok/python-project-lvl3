@@ -15,7 +15,8 @@ logger = get_logger(__name__)
 def download(web_path, output_path=os.getcwd()):
     output_path = os.path.abspath(output_path)
     check_output_path(output_path)
-    response = web_request(web_path)
+    r = web_request(web_path)
+    response = r.content
     soup = BeautifulSoup(response, 'html.parser')
     file_name = make_file_name(web_path)
     path = f'{output_path}/{file_name}'
@@ -103,11 +104,11 @@ def choose_atr(tag):
 
 @traceback_off
 def web_request(path):
-    r = requests.get(path, allow_redirects=False)
+    r = requests.get(path, allow_redirects=False, stream=True)
     r.raise_for_status()
     if str(r.status_code).startswith('3'):
         raise requests.exceptions.ConnectionError(path)
-    return r.content
+    return r
 
 
 @traceback_off
