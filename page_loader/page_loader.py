@@ -71,10 +71,11 @@ def write_file(tag, atr, url, name):
                 f.write(r.content)
             else:
                 total = int(total)
-                b = Bar('downloading ', max=100, suffix='%(percent)d%%')
+                b = Bar('downloading ', max=10, suffix='%(percent)d%%')
                 print(url)
-                for data in b.iter(r.iter_content(chunk_size=total // 100)):
+                for data in b.iter(r.iter_content(chunk_size=max(total // 100, 400))):
                     f.write(data)
+                b.finish()
         logger.debug(f'saved file {name}')
         file_path = '/'.join(name.split('/')[-2:])
         tag[atr] = file_path
