@@ -50,7 +50,7 @@ def test_download(get_response, get_html):
         assert os.path.exists(page_path), "page file not found"
         assert os.path.exists(files_dir), "files dir not found"
         assert os.path.exists(img_path), "img file not found"
-        file = open(file_path).read()
+        file = open(file_path, encoding="utf-8").read()
         assert file == get_html
 
 
