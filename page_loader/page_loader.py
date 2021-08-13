@@ -8,7 +8,6 @@ import shutil
 from page_loader.logger import get_logger
 from progress.bar import Bar
 
-
 logger = get_logger(__name__)
 
 
@@ -27,8 +26,6 @@ def download(web_path, output_path=os.getcwd()):
     tags = [tag for tag in tags if tag.get(choose_atr(tag), None) is not None]
     for tag in tags:
         atr = choose_atr(tag)
-        if not tag.get(atr, None):
-            continue
         source = tag[atr]
         file_netloc = urlparse(source).netloc
         file_scheme = urlparse(source).scheme
@@ -37,7 +34,6 @@ def download(web_path, output_path=os.getcwd()):
             file_name = make_file_name(full_url)
             file_name = f'{dir_path}/{file_name}'
             write_file(tag, atr, full_url, file_name)
-    new_soup = soup
     with open(path, 'wb') as f:
         f.write(soup.prettify(encoding='utf-8', formatter='html5'))
     return path
@@ -59,28 +55,23 @@ def check_output_path(path):
 
 
 def write_file(tag, atr, url, name):
-    try:
-        logger.debug(f'get url {url}')
-        r = requests.get(url, stream=True)
-        total = r.headers.get('content-length')
-        r.raise_for_status()
-    except Exception as e:
-        logger.error(e)
-        sys.exit(1)
-    if r.status_code == 200:
-        with open(name, 'wb') as f:
-            if not total:
-                f.write(r.content)
-            else:
-                total = int(total)
-                b = Bar('downloading ', max=10, suffix='%(percent)d%%')
-                print(url)
-                for data in b.iter(r.iter_content(chunk_size=max(total // 100, 400))):
-                    f.write(data)
-                b.finish()
-        logger.debug(f'saved file {name}')
-        file_path = '/'.join(name.split('/')[-2:])
-        tag[atr] = file_path
+    logger.debug(f'get url {url}')
+    r = web_request(url)
+    total = r.headers.get('content-length')
+    with open(name, 'wb') as f:
+        if not total:
+            f.write(r.content)
+        else:
+            total = int(total)
+            b = Bar('downloading ', suffix='%(percent)d%%')
+            print(url)
+            chunk_size = max(total // 100, 400)
+            for data in b.iter(r.iter_content(chunk_size=chunk_size)):
+                f.write(data)
+            b.finish()
+    logger.debug(f'saved file {name}')
+    file_path = '/'.join(name.split('/')[-2:])
+    tag[atr] = file_path
 
 
 def get_full_url(web_path, file_netloc, source):
