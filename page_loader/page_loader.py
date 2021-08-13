@@ -92,14 +92,11 @@ def choose_atr(tag):
 
 
 def web_request(path):
-    try:
-        r = requests.get(path)
-        r.raise_for_status()
-        if str(r.status_code).startswith('3'):
-            raise requests.exceptions.ConnectionError
-    except Exception as e:
-        logger.error(e)
-        sys.exit(1)
+    sys.tracebacklimit = 0
+    r = requests.get(path, allow_redirects=False)
+    r.raise_for_status()
+    if str(r.status_code).startswith('3'):
+        raise requests.exceptions.ConnectionError(path)
     return r.content
 
 
