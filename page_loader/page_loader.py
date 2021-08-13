@@ -1,3 +1,4 @@
+import errno
 import sys
 import re
 import os
@@ -41,10 +42,19 @@ def download(web_path, output_path=os.getcwd()):
     return path
 
 
+def traceback_off(func):
+    def wrapper(*args, **kwargs):
+        sys.tracebacklimit = 0
+        output = func(*args, **kwargs)
+        sys.tracebacklimit = 5
+        return output
+    return wrapper
+
+
+@traceback_off
 def check_output_path(path):
     if not os.path.exists(path):
-        logger.error('Invalid path: ' + path)
-        sys.exit(1)
+        raise OSError(os.strerror(2), path)
 
 
 def write_file(tag, atr, url, name):
@@ -91,8 +101,8 @@ def choose_atr(tag):
     return tags.get(tag.name)
 
 
+@traceback_off
 def web_request(path):
-    sys.tracebacklimit = 0
     r = requests.get(path, allow_redirects=False)
     r.raise_for_status()
     if str(r.status_code).startswith('3'):
@@ -100,14 +110,14 @@ def web_request(path):
     return r.content
 
 
+@traceback_off
 def mkdir(path):
     if os.path.exists(path):
         shutil.rmtree(path)
     try:
         os.mkdir(path)
     except OSError:
-        logger.error("PermissionError: Access denied: " + path)
-        sys.exit(1)
+        raise OSError(os.strerror(13), path)
 
 
 def url_str_replace(url):
