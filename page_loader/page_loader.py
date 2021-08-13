@@ -96,7 +96,7 @@ def web_request(path):
         r = requests.get(path)
         r.raise_for_status()
         if str(r.status_code).startswith('3'):
-	    raise requests.exceptions.ConnectionError
+            raise requests.exceptions.ConnectionError
     except Exception as e:
         logger.error(e)
         sys.exit(1)
