@@ -7,12 +7,12 @@ import pytest
 
 @pytest.fixture
 def get_response():
-    return open('tests/fixtures/easy_html.html', encoding="utf-8").read()
+    return open('tests/fixtures/html.html', encoding="utf-8").read()
 
 
 @pytest.fixture
 def get_html():
-    return open('tests/fixtures/easy_html_images.html', encoding="utf-8").read()
+    return open('tests/fixtures/html_resp.html', encoding="utf-8").read()
 
 
 @pook.on
@@ -50,7 +50,7 @@ def test_download(get_response, get_html):
         assert os.path.exists(page_path), "page file not found"
         assert os.path.exists(files_dir), "files dir not found"
         assert os.path.exists(img_path), "img file not found"
-        file = open(file_path, encoding="utf-8").read()
+        file = open(file_path).read()
         assert file == get_html
 
 
