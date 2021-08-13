@@ -24,6 +24,7 @@ def download(web_path, output_path=os.getcwd()):
     mkdir(dir_path)
     tags = soup.find_all(['img', 'link', 'script'])
     netloc = urlparse(web_path).netloc
+    tags = [tag for tag in tags if tag.get(choose_atr(tag), None) is not None]
     for tag in tags:
         atr = choose_atr(tag)
         if not tag.get(atr, None):
@@ -38,7 +39,7 @@ def download(web_path, output_path=os.getcwd()):
             write_file(tag, atr, full_url, file_name)
     new_soup = soup
     with open(path, 'wb') as f:
-        f.write(new_soup.prettify(encoding='utf-8', formatter='html5'))
+        f.write(soup.prettify(encoding='utf-8', formatter='html5'))
     return path
 
 
