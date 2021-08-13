@@ -55,54 +55,50 @@ def test_download(get_response, get_html):
 
 
 @pook.on
-def test_download_404(caplog):
+def test_download_404():
     pook.get(
         'https://ru.hexlet.io/courses',
         reply=404,
     )
-    with pytest.raises(SystemExit):
+    with pytest.raises(Exception) as e:
         download('https://ru.hexlet.io/courses')
-    assert '404 Client Error: Not Found for url:' in caplog.text
-    assert 'https://ru.hexlet.io/courses' in caplog.text
-    caplog.clear()
+    assert '404 Client Error: Not Found for url:' in e.value.args[0]
+    assert 'https://ru.hexlet.io/courses' in e.value.args[0]
 
 
 @pook.on
-def test_download_500(caplog):
+def test_download_500():
     pook.get(
         'https://google.com',
         reply=500,
     )
-    with pytest.raises(SystemExit):
+    with pytest.raises(Exception) as e:
         download('https://google.com')
-    assert '500 Server Error: Internal Server Error for url:' in caplog.text
-    assert 'https://google.com' in caplog.text
-    caplog.clear()
+    assert '500 Server Error: Internal Server Error for url:' in e.value.args[0]
+    assert 'https://google.com' in e.value.args[0]
 
 
 @pook.on
-def test_download_invalid_path(caplog):
+def test_download_invalid_path():
     pook.get(
         'https://yandex.ru',
         reply=200,
     )
-    with pytest.raises(SystemExit):
+    with pytest.raises(OSError) as e:
         download('https://yandex.ru', '/qwe')
-    assert 'Invalid path:' in caplog.text
-    caplog.clear()
+    assert 'No such file or directory' in e.value.args[0]
 
 
-def test_download_invalid_url(caplog):
-    with pytest.raises(SystemExit):
+def test_download_invalid_url():
+    with pytest.raises(Exception) as e:
         download('qwe')
-    assert "Invalid URL 'qwe':" in caplog.text
-    assert 'No schema supplied. Perhaps you meant' in caplog.text
-    assert 'http://qwe?' in caplog.text
-    caplog.clear()
+    assert "Invalid URL 'qwe':" in e.value.args[0]
+    assert 'No schema supplied. Perhaps you meant' in e.value.args[0]
+    assert 'http://qwe?' in e.value.args[0]
 
 
 @pook.on
-def test_download_permissions_denied(caplog):
+def test_download_permissions_denied():
     pook.get(
         'https://ya.ru',
         reply=200,
@@ -110,7 +106,6 @@ def test_download_permissions_denied(caplog):
     with tempfile.TemporaryDirectory() as tmpdir:
         path = tmpdir + '/qwerty'
         os.mkdir(path, mode=0o111)
-        with pytest.raises(SystemExit):
+        with pytest.raises(OSError) as e:
             download('https://ya.ru', path)
-        assert 'PermissionError: Access denied:' in caplog.text
-        caplog.clear()
+        assert 'Permission denied' in e.value.args[0]
